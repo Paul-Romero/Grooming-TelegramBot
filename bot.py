@@ -12,7 +12,7 @@ logging.basicConfig(
 logger = logging.getLogger()
 
 # Obtener el token guardado en una variable de entorno por seguridad
-TOKEN = os.getenv('TOKEN') #5206591761:AAGyi_D9o53DbG8Za_33kdo7j-2np5qDQWU
+TOKEN = os.getenv('TOKEN')
 
 # Enlazar el Token con el Updater de la API de Telegram
 updater = Updater(token=TOKEN, use_context=True)
@@ -79,10 +79,9 @@ dispatcher.add_handler(groom_handler)
 # Comenzar la ejecución del Bot
 def run(updater):
     PORT = int(os.environ.get('PORT','8443')) # Puerto que acepta la API de Telegram
-    HEROKU_APP_NAME = os.environ.get("HEROKU_APP") # Acepta la variable de entorno del nombre de la app
+    #HEROKU_APP_NAME = os.environ.get("HEROKU_APP") # Acepta la variable de entorno del nombre de la app
     updater = Updater(TOKEN)
-    updater.start_webhook(listen='0.0.0.0', port=PORT, url_path=TOKEN)
-    updater.bot.set_webhook(f"https://{HEROKU_APP_NAME}.herokuapp.com/{TOKEN}")
-    print("Bot cargado...")
+    updater.start_webhook(listen='0.0.0.0', port=PORT, url_path=TOKEN, webhook_url=f"https://grooming-telegram-bot.herokuapp.com/{TOKEN}")
+    updater.idle()
 
 run(updater)
