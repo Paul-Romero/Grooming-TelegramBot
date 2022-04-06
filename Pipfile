@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+emoji = "==1.7.0"
+ipython = "==8.2.0"
+joblib = "==1.1.0"
+matplotlib = "==3.5.1"
+nltk = "==3.7"
+numpy = "==1.22.3"
+pandas = "==1.4.1"
+python-telegram-bot = "==13.10"
+scikit-learn = "==1.0.2"
+spacy = "==3.2.3"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
