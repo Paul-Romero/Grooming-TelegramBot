@@ -82,6 +82,7 @@ def run(updater):
     #HEROKU_APP_NAME = os.environ.get("HEROKU_APP") # Acepta la variable de entorno del nombre de la app
     updater = Updater(TOKEN)
     updater.start_webhook(listen='0.0.0.0', port=PORT, url_path=TOKEN, webhook_url=f"https://grooming-telegram-bot.herokuapp.com/{TOKEN}")
-    updater.idle()
+    updater.idle() # Finaliza el bot con ctrl+c
 
-run(updater)
+updater.start_polling()
+updater.idle()
