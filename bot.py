@@ -80,7 +80,7 @@ dispatcher.add_handler(groom_handler)
 def run_webhook(updater):
     PORT = int(os.environ.get('PORT','8443')) # Puerto que acepta la API de Telegram
     # HEROKU_APP_NAME = os.environ.get("HEROKU_APP") # Acepta la variable de entorno del nombre de la app
-    updater.start_webhook(listen='0.0.0.0', port=PORT, url_path=TOKEN, webhook_url="https://grooming-telegram-bot.herokuapp.com"+TOKEN) # inicia el webhook de la app en heroku
+    updater.start_webhook(listen='0.0.0.0', port=PORT, url_path=TOKEN, webhook_url="https://grooming-telegram-bot.herokuapp.com/"+TOKEN) # inicia el webhook de la app en heroku
     updater.idle() # Finaliza el bot con ctrl+c
 
 #updater.start_polling()
