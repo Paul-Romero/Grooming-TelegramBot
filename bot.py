@@ -43,7 +43,7 @@ def logs(data):
     try:
         time_now = strftime('%B %d %Y %H:%M:%S', localtime())
         with open('./logs.txt', 'a+') as file_logs:
-            file_logs.write(time_now + '\t' + data['text'] + '\t' + data['niv_groom'] + '\n')
+            file_logs.write(time_now + '\t' + str(data['text']) + '\t' + str(data['niv_groom']) + '\n')
     except FileNotFoundError:
         print('No se encontró el archivo')
 
@@ -70,14 +70,13 @@ def alert(update: Update, context: CallbackContext):
     text = delete_emojis(msg) # Descarta los emojis del texto
     logger.info(f"El usuario {update.effective_user['username']} ha enviado un mensaje: {msg}") # Muestra un log del mensaje
     niv_groom = check_groom(text) # Evalua la probabilidad de que sea un mensaje grooming
-    data = {'text': str(text), 'niv_groom': str(niv_groom)} # Almacena en la variable el texto con su nivel de grooming
+    data = {'text': text, 'niv_groom': niv_groom} # Almacena en la variable el texto con su nivel de grooming
     logs(data) # Registra la información en un archivo externo
-    print(data)
     try:
         list_niv_groom = [] # Lista para los porcentajes de grooming de cada mensaje
         with open('./logs.txt', 'r') as file_logs: # Abrir el registro de mensajes
             for item in islice(file_logs, 5): # Lee los 5 primeros mensajes del registro
-                value = int(item.split('\t')[2]) # Toma los valores porcentuales de cada mensaje
+                value = float(item.split('\t')[2]) # Toma los valores porcentuales de cada mensaje
                 list_niv_groom.append(value) # Agrega el porcentaje de grooming a la lista para promediar
         msg_groom_prob = sum(list_niv_groom)/len(list_niv_groom) # Promedio probabilistico de grooming en el chat
         if msg_groom_prob >= 90.0: # Si la probabilidad es mayor a 90 emite una alerta en el chat
