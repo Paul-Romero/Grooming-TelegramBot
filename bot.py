@@ -2,6 +2,8 @@
 # from telegram import InlineQueryResultArticle, InputTextMessageContent
 from telegram.ext import Updater, CallbackContext, CommandHandler, MessageHandler, Filters
 from telegram import Update
+from time import localtime, strftime
+from itertools import islice
 import logging, os, joblib, emoji
 
 # Configuración básica del login
@@ -36,9 +38,21 @@ def unknown(update: Update, context: CallbackContext):
 def delete_emojis(text):
     return emoji.get_emoji_regexp().sub('ja', text)
 
+# Método para registrar la información
+def logs(data):
+    try:
+        time_now = strftime('%B %d %Y %H:%M:%S', localtime())
+        with open('logs.txt', 'a+') as file_logs:
+            file_logs.write(time_now + '\t' + data['text'] + 't' + data['niv_groom'] + '\n')
+    except FileNotFoundError:
+        print('No se encontró el archivo')
+
 # Función para evaluar la probabilidad de grooming del mensaje
 def check_groom(text):
-    niv_groom = []
+    niv_groom = clf.predict_proba([text])[0][2]*100
+    return niv_groom # Devuelve un porcentaje de grooming del mensaje
+
+    """niv_groom = []
     try:
         while len(niv_groom) < 5:
             msg_groom_prob = clf.predict_proba([text])[0][2]*100 # Calcula la probabilidad de que sea grooming
@@ -48,21 +62,30 @@ def check_groom(text):
                 return groom_prom # Si el promedio porbabilísitico es mayor a 90 lo devuelve
     except TypeError as te:
         raise(f"{te} \n Ocurrió un error en el tipo de dato: {type(text)}")
-    return 0
+    return 0"""
 
 # Método que genera una alerta en el chat si existe contexto grooming
 def alert(update: Update, context: CallbackContext):
     msg = update.message.text # Obtiene el texto del mensaje recivido en el chat
     text = delete_emojis(msg) # Descarta los emojis del texto
     logger.info(f"El usuario {update.effective_user['username']} ha enviado un mensaje: {msg}") # Muestra un log del mensaje
-    msg_groom_prob = check_groom(text) # Evalua la probabilidad de que sea un mensaje grooming
+    niv_groom = check_groom(text) # Evalua la probabilidad de que sea un mensaje grooming
+    data = {'text': str(text), 'niv_groom': str(niv_groom)} # Almacena en la variable el texto con su nivel de grooming
+    logs(data) # Registra la información en un archivo externo
     try:
-        if msg_groom_prob >= 95.0:
-            logger.info(f"El chat posee {msg_groom_prob:.2f}% de grooming.")
-            # Si la probabilidad es mayor a 90 emite una alerta en el chat
+        list_niv_groom = [] # Lista para los porcentajes de grooming de cada mensaje
+        with open('logs.txt', 'r') as file_logs: # Abrir el registro de mensajes
+            for item in islice(file_logs, 5): # Lee los 5 primeros mensajes del registro
+                value = int(item.split('\t')[2]) # Toma los valores porcentuales de cada mensaje
+                list_niv_groom.append(value) # Agrega el porcentaje de grooming a la lista para promediar
+        msg_groom_prob = sum(list_niv_groom)/len(list_niv_groom) # Promedio probabilistico de grooming en el chat
+        if msg_groom_prob >= 90.0: # Si la probabilidad es mayor a 90 emite una alerta en el chat
+            logger.info(f"El chat posee {msg_groom_prob:.2f}% de grooming.") # Registro en consola
             context.bot.send_message(chat_id=update.effective_chat.id, text="🚫 ¡Alerta! contenido grooming en el chat.")
     except TypeError as te:
-        raise(f"{te} \n Ocurrió un error en el tipo de dato: {type(msg), type(msg_groom_prob)}")
+        raise(f"{te} \n Ocurrió un error en el tipo de dato: {type(msg), type(niv_groom)}")
+    except FileNotFoundError:
+        raise("No se encontró el archivo")
 
 # Pasar el método de inicio al controlador para la interacción con el usuario
 start_handler = CommandHandler('start', start)
