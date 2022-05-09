@@ -42,8 +42,8 @@ def delete_emojis(text):
 def logs(data):
     try:
         time_now = strftime('%B %d %Y %H:%M:%S', localtime())
-        with open('logs.txt', 'a+') as file_logs:
-            file_logs.write(time_now + '\t' + data['text'] + 't' + data['niv_groom'] + '\n')
+        with open('./logs.txt', 'a+') as file_logs:
+            file_logs.write(time_now + '\t' + data['text'] + '\t' + data['niv_groom'] + '\n')
     except FileNotFoundError:
         print('No se encontró el archivo')
 
@@ -72,9 +72,10 @@ def alert(update: Update, context: CallbackContext):
     niv_groom = check_groom(text) # Evalua la probabilidad de que sea un mensaje grooming
     data = {'text': str(text), 'niv_groom': str(niv_groom)} # Almacena en la variable el texto con su nivel de grooming
     logs(data) # Registra la información en un archivo externo
+    print(data)
     try:
         list_niv_groom = [] # Lista para los porcentajes de grooming de cada mensaje
-        with open('logs.txt', 'r') as file_logs: # Abrir el registro de mensajes
+        with open('./logs.txt', 'r') as file_logs: # Abrir el registro de mensajes
             for item in islice(file_logs, 5): # Lee los 5 primeros mensajes del registro
                 value = int(item.split('\t')[2]) # Toma los valores porcentuales de cada mensaje
                 list_niv_groom.append(value) # Agrega el porcentaje de grooming a la lista para promediar
