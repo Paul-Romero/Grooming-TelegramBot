@@ -36,14 +36,15 @@ def unknown(update: Update, context: CallbackContext):
 
 # Función para descartar emojis del texto
 def delete_emojis(text):
-    return emoji.get_emoji_regexp().sub('ja', text)
+    return emoji.replace_emoji(text, replace='ja')
 
 # Método para registrar la información
 def logs(data):
     try:
-        time_now = strftime('%B %d %Y %H:%M:%S', localtime())
+        time_now = strftime('%B %d %Y %H:%M:%S', localtime()) # Obtiene la hora local
+        print(time_now, data['text'], data['niv_groom'])
         with open('logs.txt', 'a+') as file_logs:
-            file_logs.write(time_now + '\t' + str(data['text']) + '\t' + str(data['niv_groom']) + '\n')
+            file_logs.write(time_now + '\t' + str(data['text']) + '\t' + str(data['niv_groom']) + '\n') # Registra la hora con el mensaje y el respectivo porcentaje
     except FileNotFoundError:
         print('No se encontró el archivo')
 
@@ -85,7 +86,7 @@ def alert(update: Update, context: CallbackContext):
     except TypeError as te:
         raise(f"{te} \n Ocurrió un error en el tipo de dato: {type(msg), type(niv_groom)}")
     except FileNotFoundError:
-        raise("No se encontró el archivo")
+        print("No se encontró el archivo")
 
 # Pasar el método de inicio al controlador para la interacción con el usuario
 start_handler = CommandHandler('start', start)
