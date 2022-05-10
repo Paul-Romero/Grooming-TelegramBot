@@ -42,7 +42,6 @@ def delete_emojis(text):
 def logs(data):
     try:
         time_now = strftime('%B %d %Y %H:%M:%S', localtime()) # Obtiene la hora local
-        print(time_now, data['text'], data['niv_groom'])
         with open('./logs.txt', 'a+') as file_logs:
             file_logs.write(time_now + '\t' + str(data['text']) + '\t' + str(data['niv_groom']) + '\n') # Registra la hora con el mensaje y el respectivo porcentaje
     except FileNotFoundError:
@@ -67,6 +66,7 @@ def check_groom(text):
 
 # Método que genera una alerta en el chat si existe contexto grooming
 def alert(update: Update, context: CallbackContext):
+    cnt = 0
     msg = update.message.text # Obtiene el texto del mensaje recivido en el chat
     text = delete_emojis(msg) # Descarta los emojis del texto
     niv_groom = check_groom(text) # Evalua la probabilidad de que sea un mensaje grooming
@@ -74,14 +74,15 @@ def alert(update: Update, context: CallbackContext):
     logger.info(f"El usuario {update.effective_user['username']} ha enviado un mensaje: {msg} con {niv_groom:.2f}% grooming") # Muestra un log del mensaje
     logs(data) # Registra la información en un archivo externo
     try:
+        if msg: cnt += 1
         list_niv_groom = [] # Lista para los porcentajes de grooming de cada mensaje
         with open('./logs.txt', 'r') as file_logs: # Abrir el registro de mensajes
-            for item in islice(file_logs, 5): # Lee los 5 primeros mensajes del registro
+            for item in islice(file_logs, cnt): # Lee los 5 primeros mensajes del registro
                 value = float(item.split('\t')[2]) # Toma los valores porcentuales de cada mensaje
                 list_niv_groom.append(value) # Agrega el porcentaje de grooming a la lista para promediar
         msg_groom_prob = sum(list_niv_groom)/len(list_niv_groom) # Promedio probabilistico de grooming en el chat
         print(f'Lista de porcentajes: {list_niv_groom} \n Promedio total: {msg_groom_prob}')
-        if msg_groom_prob >= 80.0: # Si la probabilidad es mayor a 80 emite una alerta en el chat
+        if msg_groom_prob > 80.0 and len(list_niv_groom) == cnt: # Si la probabilidad es mayor a 80 emite una alerta en el chat
             logger.info(f"El chat posee {msg_groom_prob:.2f}% de grooming.") # Registro en consola
             context.bot.send_message(chat_id=update.effective_chat.id, text="🚫 ¡Alerta! contenido grooming en el chat.")
     except TypeError as te:
