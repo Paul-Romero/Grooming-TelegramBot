@@ -81,6 +81,7 @@ def alert(update: Update, context: CallbackContext):
         msg_groom_prob = sum(list_niv_groom)/len(list_niv_groom) # Promedio probabilistico de grooming en el chat
         print(f'Lista de porcentajes: {list_niv_groom} \n Promedio total: {msg_groom_prob}')
         if msg_groom_prob > 80.0 and len(list_niv_groom) == 8: # Si la probabilidad es mayor a 80 emite una alerta en el chat
+            list_niv_groom.clear()
             logger.info(f"El chat posee {msg_groom_prob:.2f}% de grooming.") # Registro en consola
             context.bot.send_message(chat_id=update.effective_chat.id, text="🚫 ¡Alerta! contenido grooming en el chat.")
     except TypeError as te:
