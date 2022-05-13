@@ -72,15 +72,17 @@ def alert(update: Update, context: CallbackContext):
     data = {'text': text, 'niv_groom': niv_groom} # Almacena en la variable el texto con su nivel de grooming
     logger.info(f"El usuario {update.effective_user['username']} ha enviado un mensaje: {msg} con {niv_groom:.2f}% grooming") # Muestra un log del mensaje
     logs(data) # Registra la información en un archivo externo
+    n_lines = 5
     try:
         list_niv_groom = [] # Lista para los porcentajes de grooming de cada mensaje
         with open('./logs.txt', 'r') as file_logs: # Abrir el registro de mensajes
-            for item in islice(file_logs, 8): # Lee los 5 primeros mensajes del registro
-                value = float(item.split('\t')[2]) # Toma los valores porcentuales de cada mensaje
+            lines = file_logs.readlines()[-n_lines:] # Lee los 5 primeros mensajes del registro
+            for line in lines:
+                value = float(line.split('\t')[2]) # Toma los valores porcentuales de cada mensaje
                 list_niv_groom.append(value) # Agrega el porcentaje de grooming a la lista para promediar
         msg_groom_prob = sum(list_niv_groom)/len(list_niv_groom) # Promedio probabilistico de grooming en el chat
         print(f'Lista de porcentajes: {list_niv_groom} \n Promedio total: {msg_groom_prob}')
-        if msg_groom_prob > 80.0 and len(list_niv_groom) == 8: # Si la probabilidad es mayor a 80 emite una alerta en el chat
+        if msg_groom_prob > 80.0 and len(list_niv_groom) == n_lines: # Si la probabilidad es mayor a 80 emite una alerta en el chat
             list_niv_groom.clear()
             logger.info(f"El chat posee {msg_groom_prob:.2f}% de grooming.") # Registro en consola
             context.bot.send_message(chat_id=update.effective_chat.id, text="🚫 ¡Alerta! contenido grooming en el chat.")
